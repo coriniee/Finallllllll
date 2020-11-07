@@ -19,16 +19,13 @@ public class Night : MonoBehaviour
         {
             isNight = true;
             Debug.Log("눈송늦잠엔딩[5]");
-            for(int i =0; i<4; i++)
-            {
-                cArray[i] = gArray[i].GetComponent<Collider2D>();
-            }
-            
         }
         NightPanel.SetActive(isNight);
         for (int i = 0; i < 4; i++)
         {
+            cArray[i] = gArray[i].GetComponent<Collider2D>();
             cArray[i].enabled = !isNight;
+            Debug.Log(i + "getCollider");
         }
     }
 
