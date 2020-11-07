@@ -12,6 +12,7 @@ public class PlayerMove_room : MonoBehaviour
     Animator anim;
     private int jumpCheck;
     private bool isOnbed;
+    private bool isSleeping;
     float timer = 0f;
     float timer2 = 0f;
     GameObject scanObject;
@@ -70,13 +71,39 @@ public class PlayerMove_room : MonoBehaviour
         else if (rigid.velocity.x < maxSpeed * (-1)) //Left Max Speed
             rigid.velocity = new Vector2(maxSpeed * (-1), rigid.velocity.y);//y축을 0으로 잡으면 공중에 안뜸
 
+        Debug.DrawRay(rigid.position, Vector3.down * (1), new Color(0, 1, 0));
+        //침대 위에 있는 지 검사.
+        RaycastHit2D bedHit = Physics2D.Raycast(rigid.position, Vector3.down, 1, LayerMask.GetMask("Bed"));
+        if (bedHit.collider != null)//침대 위에 있음.
+        {
+            Debug.Log("잠을 자려면 윗방향키를 눌러주세요.");
+            if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                Debug.Log("잠에 듭니다 ~");
+                anim.SetBool("isSleeping", true);
+                isSleeping = true;
+            }
+        }
+        else
+        {
+            anim.SetBool("isSleeping", false);
+            isSleeping = false;
+        }
+        if (isSleeping)
+        {
+            timer2 += Time.deltaTime;
+            if (timer2 >= 10)
+            {
+                EndArray.setEndingArray(2, true);
+                Debug.Log("눈송 늦잠엔딩(밤되는거 아님) [2]");
+            }
+        }
+        else
+            timer2 = 0f;
         //Landing Platform
         if (rigid.velocity.y < 0)
         {
-            Debug.DrawRay(rigid.position, Vector3.down * (1), new Color(0, 1, 0));
             RaycastHit2D rayHit = Physics2D.Raycast(rigid.position, Vector3.down, 1, LayerMask.GetMask("Platform"));
-            //침대 위에 있는 지 검사.
-            RaycastHit2D bedHit = Physics2D.Raycast(rigid.position, Vector3.down, 1, LayerMask.GetMask("Bed"));
             if (rayHit.collider != null)
             {
                 if (rayHit.distance < 0.6f)
@@ -84,13 +111,6 @@ public class PlayerMove_room : MonoBehaviour
                     anim.SetBool("isJumping", false);
                     anim.SetBool("isSitting", false);
                 }
-                if (bedHit.collider != null)//침대 위에 있음.
-                {
-                    Debug.Log("잠을 자려면 윗방향키를 눌러주세요.");
-                    anim.SetBool("isSleeping", true);
-                }
-                else
-                    anim.SetBool("isSleeping", false);
             }
         }
 
@@ -132,12 +152,13 @@ public class PlayerMove_room : MonoBehaviour
     {
         if (other.gameObject.name == "com")
         {
+            Debug.Log("컴퓨터 감지 Test");
             if (Input.GetKeyDown(KeyCode.UpArrow))
             {
+                Debug.Log("컴퓨터 엔딩 Test");
                 manager.talkText.text = "눈송은 컴퓨터의 유혹에 빠져...학교에 늦어버렸다!!";
                 manager.isAction = false;
                 EndArray.setEndingArray(1, true);
-                
             }
         }
         else if (other.gameObject.name == "chairCollider")
